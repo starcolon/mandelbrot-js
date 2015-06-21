@@ -46,13 +46,13 @@ function render(size,bound,center,maxIter){
 
 function canvasCoordToPlaneCoord(u,v,center,bound,size){
 	return {
-		re: (u-(size/2))*bound/(size/2) + Re(center),
-		im: (v-(size/2))*bound/(size/2) + Im(center)
+		re: parseFloat(u-(size/2))*bound/parseFloat(size/2) + Re(center),
+		im: parseFloat(v-(size/2))*bound/parseFloat(size/2) + Im(center)
 	}
 }
 
 function planeCoordToCanvasCoord(z,center,bound,size){
-	var s = (size/2)/bound;
+	var s = parseFloat(size/2)/bound;
 	return {
 		x: size/2 + s*(Re(z) - Re(center)), 
 		y: size/2 + s*(Im(z) - Im(center))
@@ -72,20 +72,21 @@ function mandelbrot(center,c,bound,size,paper,maxIter){
 	// then it is a member of the set
 	if (iter<maxIter){
 		var coord = planeCoordToCanvasCoord(c, center, bound, size);
-		var intensity = 255 - (255*iter/maxIter);
-		var R = parseInt(intensity);
+		var ratio = parseFloat(iter)/parseFloat(maxIter);
+		var intensity = 255-255*ratio;
+		var R = 200;
 		var G = parseInt(Math.ceil(intensity*0.25));
 		var B = parseInt(Math.ceil(intensity*0.3));
+		var alpha = ratio < 0.2 ? 0.2 : ratio;
 		function showCoord(cx){
 			return function(event){
 				console.log('> ' + parseFloat(Re(cx)).toFixed(5) + ' : ' + parseFloat(Im(cx)).toFixed(5)+'i');
 			}
 		}
 		paper.circle(coord.x, coord.y, 1).attr({
-			fill: 'rgba('+R+','+G+','+B+',0.8)', 
+			fill: 'rgba('+R+','+G+','+B+','+alpha+')', 
 			stroke: 'none'
-		})
-		//.click(showCoord(c));
+		});
 	}
 }
 
