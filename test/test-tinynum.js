@@ -4,7 +4,7 @@
  * This test suite can be executed on "mocha" only.
  */
 
-var expect = require('expect');
+var expect = require('expect.js');
 var TinyFloat = require('../lib/tinynum.js');
 
 //-------------------------------------------------------
@@ -28,8 +28,8 @@ describe('tinynum module tests', function(){
 			var v1 = new TinyFloat(25, 0);
 			var v2 = new TinyFloat(111,1);
 			var v3 = TinyFloat.add(v1,v2);
-			expect(v3.a).to.be.equal(2.775);
-			expect(v3.exp).to.be.equal(4);
+			expect(v3.a).to.be.equal(1.135);
+			expect(v3.exp).to.be.equal(3);
 		})
 
 		it('should multiply two tiny floats', function(){

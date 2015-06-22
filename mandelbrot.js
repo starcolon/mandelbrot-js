@@ -5,6 +5,9 @@
  * Dependencies: Raphaël.js
  */
 
+
+var _ = TinyFloat;
+
 function render(size,bound,center,maxIter){
 	console.log('bound = ' + parseFloat(bound).toFixed(3));
 
@@ -45,24 +48,31 @@ function render(size,bound,center,maxIter){
 
 
 function canvasCoordToPlaneCoord(u,v,center,bound,size){
+	var halfsize = _.div2(size);
+	var k = _.add(u,-halfsize);
 	return {
-		re: parseFloat(u-(size/2))*bound/parseFloat(size/2) + Re(center),
-		im: parseFloat(v-(size/2))*bound/parseFloat(size/2) + Im(center)
+		re: _.add(_.mul(k,_.div(bound,halfsize)),Re(center)), 
+		im: _.add(_.mul(k,_.div(bound,halfsize)),Im(center))
+		///re: parseFloat(u-(size/2))*bound/parseFloat(size/2) + Re(center),
+		///im: parseFloat(v-(size/2))*bound/parseFloat(size/2) + Im(center)
 	}
 }
 
 function planeCoordToCanvasCoord(z,center,bound,size){
-	var s = parseFloat(size/2)/bound;
+	var halfsize = _.div2(size);
+	var s = _.div(halfsize,bound);
 	return {
-		x: size/2 + s*(Re(z) - Re(center)), 
-		y: size/2 + s*(Im(z) - Im(center))
+		x: _.add(halfsize, _.mul(s, _.add(Re(z),-Re(center)))),
+		y: _.add(halfsize, _.mul(s, _.add(Im(z),-Im(center))))
+		///x: size/2 + s*(Re(z) - Re(center)), 
+		///y: size/2 + s*(Im(z) - Im(center))
 	}
 }
 
 function mandelbrot(center,c,bound,size,paper,maxIter){
 	var iter = 0;
 	var z = {re: 0, im: 0};
-	while (Abs(z)<bound && iter<maxIter){
+	while (_.less(Abs(z),bound) && iter<maxIter){
 		// Generate the next set element
 		z = nextMandelbrot(z, c);
 		++iter;
@@ -78,7 +88,7 @@ function mandelbrot(center,c,bound,size,paper,maxIter){
 		var B = 0;
 		function showCoord(cx){
 			return function(event){
-				console.log('> ' + parseFloat(Re(cx)).toFixed(5) + ' : ' + parseFloat(Im(cx)).toFixed(5)+'i');
+				console.log('> ' + _.str(Re(cx)) + ' : ' + _.str(Im(cx))+'i');
 			}
 		}
 		paper.circle(coord.x, coord.y, 1).attr({
@@ -103,14 +113,20 @@ function Im(z){
 }
 
 function Abs(z){
-	return Math.sqrt(Re(z)*Re(z) + Im(z)*Im(z))
+	var re2 = _.sqr(Re(z));
+	var im2 = _.sqr(Im(z));
+	return _.sqrt(_.add(re2,im2));
 }
 
 function sqr(z){
-	return {re: Re(z)*Re(z) - Im(z)*Im(z),im: 2*Re(z)*Im(z)}
+	var mul2 = function(s){ return _.mul(s,new _(2)) }
+	return {
+		re: _.add(_.sqr(Re(z)),-_.sqr(Im(z))),
+		im: _.mul2(_.mul(Re(z),Im(z)))
+	}
 }
 
 function add(z,c){
-	return {re: Re(z)+Re(c), im: Im(z)+Im(c)}
+	return {re: _.add(Re(z),Re(c)), im: _.add(Im(z),Im(c))}
 }
 
