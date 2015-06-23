@@ -32,6 +32,23 @@ describe('tinynum module tests', function(){
 			expect(v3.exp).to.be.equal(3);
 		})
 
+		it('should add two tiny floats (2)', function(){
+			var v1 = new TinyFloat(7, -41);
+			var v2 = new TinyFloat(-6, -23);
+			var v3 = TinyFloat.add(v1,v2);
+			expect(v3.exp).to.be.equal(-23);
+		})
+
+		it('should add/subtract two tiny floats (3)', function(){
+			var v1 = new TinyFloat(7, -41);
+			var v2 = new TinyFloat(-6, -43);
+			var v3 = TinyFloat.add(v1,v2);
+			var v4 = TinyFloat.subtract(v1, v2);
+			expect(v3.exp).to.be.equal(-41);
+			expect(v4.exp).to.be.equal(-41);
+		})
+
+
 		it('should multiply two tiny floats', function(){
 			var v1 = new TinyFloat(3, 8);
 			var v2 = new TinyFloat(2, -12);

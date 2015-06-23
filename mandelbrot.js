@@ -7,9 +7,17 @@
 
 
 var _ = TinyFloat;
+var $ = _.opr;
 
 function render(size,bound,center,maxIter){
-	console.log('bound = ' + parseFloat(bound).toFixed(3));
+	if (typeof(bound)=='number') bound = new TinyFloat(bound, 0);
+	if (typeof(Re(center))=='number'){
+		center.re = new TinyFloat(Re(center), 0);
+		center.im = new TinyFloat(Im(center), 0);
+	}
+
+	console.log('bound = ' + _.v(bound));
+	console.log('center = ' + _.v(center.re) + ' , ' + _.v(center.im)+'i');
 
 	// Initialize the canvas
 	var paper = Raphael(0,0,size,size);
@@ -24,12 +32,25 @@ function render(size,bound,center,maxIter){
 	paper.path( ["M", size/2, 0, "L", size/2, size ] ).attr({stroke: 'rgb(50,50,50)'});
 	paper.circle(size/2,size/2,size/2).attr({stroke: 'rgb(50,50,50)'});
 
+
+	var z = {re:0, im:0};
+	z.re = new _(-1);
+	z.im = new _(1/3);
+	console.log('z = ' + _.v(Re(z)) + ', ' + _.v(Im(z)));
+	var cc = planeCoordToCanvasCoord(z, center, bound, size);
+	console.log('c = ' + _.v(cc.x) + ', ' + _.v(cc.y));
+	paper.circle(_.v(cc.x),_.v(cc.y),2).attr({stroke: 'red'});
+
+	return; // DEBUG:
+
 	var operations = [];
 	var iter = 0;
 	console.log('sequencing ...');
 	for (var u=0; u<size; u++)
 		for (var v=0; v<size; v++){
 			var c = canvasCoordToPlaneCoord(u, v, center, bound, size);
+			continue; // DEBUG:
+
 			// Generate Mandelbrot sequence from this coordinate
 			operations.push(new Promise(function(resolve,reject){
 				mandelbrot(center, c, bound, size, paper, maxIter);
@@ -48,24 +69,27 @@ function render(size,bound,center,maxIter){
 
 
 function canvasCoordToPlaneCoord(u,v,center,bound,size){
-	var halfsize = _.div2(size);
-	var k = _.add(u,-halfsize);
+	pu = new _(u);
+	pv = new _(v);
+	var halfsize = new TinyFloat(size/2,0);
+	var res = $(bound,'/',halfsize); 
+	var du = $(pu,'-',halfsize);
+	var dv = $(pv,'-',halfsize);
+
 	return {
-		re: _.add(_.mul(k,_.div(bound,halfsize)),Re(center)), 
-		im: _.add(_.mul(k,_.div(bound,halfsize)),Im(center))
-		///re: parseFloat(u-(size/2))*bound/parseFloat(size/2) + Re(center),
-		///im: parseFloat(v-(size/2))*bound/parseFloat(size/2) + Im(center)
+		re: $($(du,'*',res),'+',Re(center)),
+		im: $($(dv,'*',res),'+',Im(center))
+		//re: (u-(size/2))*bound/(size/2) + Re(center),
+		//im: (v-(size/2))*bound/(size/2) + Im(center)
 	}
 }
 
 function planeCoordToCanvasCoord(z,center,bound,size){
-	var halfsize = _.div2(size);
+	var halfsize = new TinyFloat(size/2,0);
 	var s = _.div(halfsize,bound);
 	return {
-		x: _.add(halfsize, _.mul(s, _.add(Re(z),-Re(center)))),
-		y: _.add(halfsize, _.mul(s, _.add(Im(z),-Im(center))))
-		///x: size/2 + s*(Re(z) - Re(center)), 
-		///y: size/2 + s*(Im(z) - Im(center))
+		x: _.add(halfsize, _.mul(s, _.subtract(Re(z),Re(center)))),
+		y: _.add(halfsize, _.mul(s, _.subtract(Im(z),Im(center))))
 	}
 }
 
@@ -82,16 +106,12 @@ function mandelbrot(center,c,bound,size,paper,maxIter){
 	// then it is a member of the set
 	if (iter<maxIter){
 		var coord = planeCoordToCanvasCoord(c, center, bound, size);
+		console.log('draw: ' + _.str(Re(c)) + ' , ' + _.str(Im(c)) + 'i'); // VERBOSE:
 		var ratio = 10 - Math.log(parseFloat(iter)/parseFloat(maxIter))/10;
 		var R = 200;
 		var G = parseInt(ratio*255);
 		var B = 0;
-		function showCoord(cx){
-			return function(event){
-				console.log('> ' + _.str(Re(cx)) + ' : ' + _.str(Im(cx))+'i');
-			}
-		}
-		paper.circle(coord.x, coord.y, 1).attr({
+		paper.circle(_.v(coord.x), _.v(coord.y), 1).attr({
 			fill: 'rgba('+R+','+G+','+B+',0.8)', 
 			stroke: 'none'
 		});
